@@ -16,7 +16,7 @@ void print2DArray(double **array, int rows, int cols) {
         printf("\n");                       // Newline after each row
     }
 }
-
+//test
 typedef struct {
     double x;
     double y;
