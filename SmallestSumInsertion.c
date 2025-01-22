@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <stdlib.h>
 double euclidean_distance(double x1,double x2, double y1, double y2){
         double distance = sqrt(((x1 - x2)*(x1-x2)) + ((y1 - y2)*(y1-y2)));
@@ -34,7 +35,7 @@ double **distance_matrix(Coordinate *coordinates){
         }
     }
 
-    printf("location %f ", matrix[0][1]);
+    //printf("location %f ", matrix[0][1]);
     print2DArray(matrix, 9, 9);
     //free(coordinates);
     return matrix;
@@ -74,38 +75,119 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
 
 
     //add index 0 as the starting point
-    double* tour = (double*)malloc(10 * sizeof(double));
+    int* tour = (int*)malloc(10 * sizeof(int));
+
     double cost = 0;
     //visited
     double * visited = (double*)malloc(9 * sizeof(double));
-    for(int i =0; i<=9;i++){
-        visited[i] = i;
-    }
+
     //put closing 0 in after first loop
-    tour[0],visited[0] = 0;
-   
-    //now we need to start the process to find cheapest
-    //so iterate through all coordinates that have not already been visited, 
-    // and find the one such that the distance is minimal
-    // tourcost =
-    for(int i =0; i < 10;i++){
+    tour[0] = 0;
+    visited[0] =0;
+    
+    int tourCount = 1;
+
+    for(int i = 0; i < 10;i++){
         if(i == 1){
-            tour[2] = 0;
-        }
+            tour[1] = 0;
+            tourCount++;
+        } 
     }
-        //i want to say if not already visited
-        //could start our search, find optimal value, then check if already in
-        
-        //iterate through all locations in
-        //use distance matrix function to find distance between points, psuedocode
 
-        //j<10 is abitrary for the moment
+        /**
+         * 
+         * gets the closest node and its index
+        */
+        for(int i = 0; i<10;i++){
 
-        printf("dmatrix check: %f", dist_matrix[2][3]);
-        for(int j = 0; j<10;j++){
-        // cost = dist_matrix(i,i+1)
-           //double Currentcost = distance_matrix(coordinates,i,j); 
-           double CurrectCost = dist_matrix[0][1];
+           // double CurrentCost = DBL_MAX;
+            //first find the closest from 0
+            double globalClosest = DBL_MAX;
+            int globalClosestidx = INT_MAX;
+
+            for(int j = 0;j<9;j++){
+                double localClosest = dist_matrix[i][j];
+                if(localClosest < globalClosest && localClosest != 0){
+                    globalClosest = localClosest;
+                    globalClosestidx = j;
+                }    
+            }
+            //printf("Global closest distance is: %f", globalClosest);
+            //printf("Global closest index is: %d", globalClosestidx);
+
+
+            //perhaps this should be set up to choose the higher index in a tie-break 
+            double GlobalMinDist = DBL_MAX;
+            int globalMinDistIdx = INT_MAX;
+            for(int j = 0;j<tourCount;j++){
+                
+                //printf("tour j =,%d\n", tour[j]);
+                //printf("tour j+1 =,%d\n", tour[j+1]);
+                //printf("GlobalClosestIndex =,%d\n", globalClosestidx);
+
+
+                //printf("First condition %f\n",dist_matrix[tour[j]][globalClosestidx]);
+                //printf("Second condition %f\n",dist_matrix[tour[j+1]][globalClosestidx]);
+                //printf("Third Condition %f\n",dist_matrix[tour[j]][tour[j+1]]);
+
+                //insert the closest Index first, then check for best position, ensure it does not check at either ends
+                //we are finding the optimal index not including tour[0] and tour[n]
+                for(int k = 1;k<tourCount-1;k++){
+                    //make a gap, check cost
+
+                    //tour[k+1] = tour[k];
+                    tour[k] = globalClosestidx;
+
+                    double localMinDist = dist_matrix[tour[k]][globalClosestidx] + dist_matrix[tour[k+1]][globalClosestidx] - dist_matrix[tour[k]][tour[k+1]];
+                    printf("localMinDist is: %f\n", localMinDist);
+                    printf("localMinDistidx is: %d\n", k);
+                
+                    if(localMinDist <= GlobalMinDist && localMinDist != 0 && k != 0){
+                        GlobalMinDist = localMinDist;
+                        globalMinDistIdx = k;
+                    }
+                    printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
+                }
+
+
+                //double localMinDist = dist_matrix[tour[j]][globalClosestidx] + dist_matrix[tour[j+1]][globalClosestidx] - dist_matrix[tour[j]][tour[j+1]];
+               
+                //printf("for value: %d\n",globalClosestidx);
+                //printf("localMinDist is: %f\n", localMinDist);
+                //printf("localMinDistidx is: %d\n", j);
+                
+                //if(localMinDist <= GlobalMinDist && localMinDist != 0 && j!=0){
+                  //  GlobalMinDist = localMinDist;
+                  //  globalMinDistIdx = j;
+                //}
+               // printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
+            }
+            //printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
+            
+            //this will be changing the value at the index, instead of pushing everything
+
+            //we can iterate up to globalMinDistIdx, and push everything ahead up by one
+            //to ensure the starting loop remains correct, we could add a condition that will
+            //only do this if an integer is in the place we want to insert in
+            //for(int j =0;j<tourCount;j++){
+                //if(j == globalMinDistIdx){
+                   // tour[j+1] = tour[j];
+              //  }
+           // }
+           // tour[globalMinDistIdx] = globalClosestidx;
+
+
+            printf("Current tour : \n");
+            for(int j = 0; j<tourCount;j++){
+                printf("%d,",tour[j]);
+            }
+
+
+            tourCount++;
+            //printf("globalMinDistIdx is: %d", globalMinDistIdx);
+            
+            //insert global closest idx into the globalMinDistIdx
+
     }
 }
 
