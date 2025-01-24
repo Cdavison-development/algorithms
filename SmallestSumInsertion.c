@@ -47,7 +47,7 @@ void array_size(){
 	for(int i = 0; i <= 9; i++){
 		array1[i] = malloc(9 * sizeof(double));
     }
-    printf("Size of pointer: %lu bytes \n",sizeof(**array1));
+   // printf("Size of pointer: %lu bytes \n",sizeof(**array1));
 
 }
 
@@ -84,15 +84,10 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
     //put closing 0 in after first loop
     tour[0] = 0;
     visited[0] =0;
-    
-    int tourCount = 1;
+    tour[1] = 0;
+    int VisitedCount = 1;
+    int tourCount = 2;
 
-    for(int i = 0; i < 10;i++){
-        if(i == 1){
-            tour[1] = 0;
-            tourCount++;
-        } 
-    }
 
         /**
          * 
@@ -119,68 +114,28 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
             //perhaps this should be set up to choose the higher index in a tie-break 
             double GlobalMinDist = DBL_MAX;
             int globalMinDistIdx = INT_MAX;
-            for(int j = 0;j<tourCount;j++){
-                
-                //printf("tour j =,%d\n", tour[j]);
-                //printf("tour j+1 =,%d\n", tour[j+1]);
-                //printf("GlobalClosestIndex =,%d\n", globalClosestidx);
-
-
-                //printf("First condition %f\n",dist_matrix[tour[j]][globalClosestidx]);
-                //printf("Second condition %f\n",dist_matrix[tour[j+1]][globalClosestidx]);
-                //printf("Third Condition %f\n",dist_matrix[tour[j]][tour[j+1]]);
-
-                //insert the closest Index first, then check for best position, ensure it does not check at either ends
-                //we are finding the optimal index not including tour[0] and tour[n]
-                for(int k = 1;k<tourCount-1;k++){
-                    //make a gap, check cost
-
-                    //tour[k+1] = tour[k];
-                    tour[k] = globalClosestidx;
-
+            for(int k = 0;k<tourCount;k++){
                     double localMinDist = dist_matrix[tour[k]][globalClosestidx] + dist_matrix[tour[k+1]][globalClosestidx] - dist_matrix[tour[k]][tour[k+1]];
-                    printf("localMinDist is: %f\n", localMinDist);
-                    printf("localMinDistidx is: %d\n", k);
-                
-                    if(localMinDist <= GlobalMinDist && localMinDist != 0 && k != 0){
+                    //printf("localMinDist is: %f\n", localMinDist);
+                    //printf("localMinDistidx is: %d\n", k);
+                    
+                    if(localMinDist < GlobalMinDist && localMinDist != 0 && k != 0 && k != tourCount){
                         GlobalMinDist = localMinDist;
                         globalMinDistIdx = k;
+                        printf("globalMinDist is: %f\n", GlobalMinDist);
+                        printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
                     }
-                    printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
                 }
+            tour[globalMinDistIdx + 1] = tour[globalMinDistIdx];
+            tour[globalMinDistIdx] = globalClosestidx;
 
 
-                //double localMinDist = dist_matrix[tour[j]][globalClosestidx] + dist_matrix[tour[j+1]][globalClosestidx] - dist_matrix[tour[j]][tour[j+1]];
-               
-                //printf("for value: %d\n",globalClosestidx);
-                //printf("localMinDist is: %f\n", localMinDist);
-                //printf("localMinDistidx is: %d\n", j);
-                
-                //if(localMinDist <= GlobalMinDist && localMinDist != 0 && j!=0){
-                  //  GlobalMinDist = localMinDist;
-                  //  globalMinDistIdx = j;
-                //}
-               // printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
-            }
-            //printf("globalMinDistIdx is: %d\n", globalMinDistIdx);
-            
-            //this will be changing the value at the index, instead of pushing everything
-
-            //we can iterate up to globalMinDistIdx, and push everything ahead up by one
-            //to ensure the starting loop remains correct, we could add a condition that will
-            //only do this if an integer is in the place we want to insert in
-            //for(int j =0;j<tourCount;j++){
-                //if(j == globalMinDistIdx){
-                   // tour[j+1] = tour[j];
-              //  }
-           // }
-           // tour[globalMinDistIdx] = globalClosestidx;
-
-
+            //printf("TourCount is: %d", tourCount);
             printf("Current tour : \n");
-            for(int j = 0; j<tourCount;j++){
+            for(int j = 0; j<=tourCount;j++){
                 printf("%d,",tour[j]);
             }
+            printf("\n");
 
 
             tourCount++;
