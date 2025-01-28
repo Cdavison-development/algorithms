@@ -2,6 +2,7 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <stdbool.h>
 double euclidean_distance(double x1,double x2, double y1, double y2){
         double distance = sqrt(((x1 - x2)*(x1-x2)) + ((y1 - y2)*(y1-y2)));
         //printf("distance is = %f ", distance);
@@ -74,7 +75,7 @@ void array_size(){
 
 /**
  * 
- * TODO: stop nodes being used more than once.
+ * TODO: The tour is replacing values and inserting a 0, rather than re-arranging
  * 
  * 
 */
@@ -87,6 +88,11 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
     double cost = 0;
     //visited
     int * visited = (int*)malloc(9 * sizeof(int));
+    int * unvisited = (int*)malloc(9 * sizeof(int));
+
+    for(int i = 0; i<=8;i++){
+        unvisited[i] = i;  
+    }
 
     //put closing 0 in after first loop
     tour[0] = 0;
@@ -94,34 +100,81 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
     tour[1] = 0;
     int VisitedCount = 1;
     int tourCount = 2;
-
-
+    int UnvisitedCount = 8;
+    //printf("Test");
         /**
          * 
          * gets the closest node and its index
         */
        //could convert this to a while
        
-        for(int i = 0; i<10;i++){
+    for(int i = 0; i<10;i++){
 
            // double CurrentCost = DBL_MAX;
             //first find the closest from 0
-            double globalClosest = DBL_MAX;
-            int globalClosestidx = INT_MAX;
+        double globalClosest = DBL_MAX;
+        int globalClosestidx = INT_MAX;
 
-            for(int j = 0;j<9;j++){
-                double localClosest = dist_matrix[i][j];
-                for(int v = 0;v<VisitedCount;v++){  
-                    if(tour[j] != visited[v]){
-                        if(localClosest < globalClosest && localClosest != 0){
-                            globalClosest = localClosest;
-                            globalClosestidx = j;
-                            printf("Visited[v]: %d", visited[v]);
-                            printf("j = %d",j);
-                    }    
+        
+        // We need to go up with the size of the tour
+        for(int j = 0;j<UnvisitedCount;j++){
+            //printf("Closest sum %f", ClosestSum);
+            double ClosestSum = 0;
+           // bool Visited = true;
+            //printf("Closest sum %f", ClosestSum);
+            printf("j %d : ", j);
+            for(int k = 0;k<tourCount-1;k++){
+                printf("k %d : ", k);
+                ClosestSum += dist_matrix[tour[k]][unvisited[j]];
+                //if(ClosestSum < globalClosest && ClosestSum != 0 && Visited == false){
+            }
+            bool Visited = false;
+                //printf("localClosest : %d", localClosest);
+                for(int v = 0;v<UnvisitedCount;v++){ 
+                    if(j != unvisited[v]){
+                        Visited = true;
+                        break;
+                    }
+                }
+                printf("Closest sum %f", ClosestSum);
+                if(ClosestSum < globalClosest && ClosestSum != 0){
+                        globalClosest = ClosestSum;
+                        globalClosestidx = j;       
+                        printf("closest index = %d",j);
+                        printf("Local closest : %f" ,globalClosest);
+                    } 
+            //printf("Visited[v]: %d", visited[v]);
+        }
+        
+
+/**
+        for(int j = 0;j<9;j++){
+            // This needs to be the sum of distances from each unvisited vertex to the
+            // existing partial tour vertices, so for example, does vertex 3 return the lowest sum 
+
+            //loop through all unvisited vertices, and find the one that returns the lowest 
+            //dist between this vertice and all vertices currently in the tour.
+
+
+
+            double localClosest = dist_matrix[i][j];
+            bool inVisited = false;
+            //printf("localClosest : %d", localClosest);
+            for(int v = 0;v<VisitedCount;v++){ 
+                if(j == visited[v]){
+                    inVisited = true;
+                    break;
                 }
             }
-            }
+            //printf("Visited[v]: %d", visited[v]);
+            if(localClosest < globalClosest && localClosest != 0 && inVisited == false){
+                        globalClosest = localClosest;
+                        globalClosestidx = j;       
+                        printf("j = %d",j);
+                        printf("Local closest : %f" ,localClosest);
+                    } 
+        }
+        **/
             //printf("Global closest distance is: %f", globalClosest);
             //printf("Global closest index is: %d", globalClosestidx);
 
@@ -141,9 +194,28 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
                     }
             }
             printf("global Closest Index is is: %d\n", globalClosestidx);
-            tour[globalMinDistIdx + 1] = tour[globalMinDistIdx];
+
+            for(int j = 10;j>=globalMinDistIdx;j--){
+                //int OverwrittenVal = tour[j + 1];
+                //tour[j + 1] = tour[j];
+
+                tour[j] = tour[j-1];
+
+            }
+            //tour[globalMinDistIdx + 1] = tour[globalMinDistIdx];
             tour[globalMinDistIdx] = globalClosestidx;
             visited[VisitedCount] = globalClosestidx;
+            //remove global closest index from unvisited
+            //rather than remove global closest index, swap with item at the end, and deincrement Unvisited count, so this
+            //value is not within the scope anymore
+            for(int j =0;j<=UnvisitedCount;j++){
+                if(unvisited[j]==globalClosestidx){
+                    int PlaceHolder = INT_MAX;
+                    PlaceHolder = unvisited[UnvisitedCount];
+                    unvisited[UnvisitedCount] = unvisited[j];
+                    unvisited[j] = PlaceHolder;
+                }
+            }
             
 
             //printf("TourCount is: %d", tourCount);
@@ -160,6 +232,7 @@ void smallestSumInsertion(Coordinate *coordinates, double **dist_matrix){
 
             VisitedCount++;
             tourCount++;
+            UnvisitedCount--;
             //printf("globalMinDistIdx is: %d", globalMinDistIdx);
             
             //insert global closest idx into the globalMinDistIdx
@@ -183,6 +256,7 @@ void main(){
     double **dist_matrix;
     dist_matrix = distance_matrix(coordinates);
     array_size();
+    
     smallestSumInsertion(coordinates,dist_matrix);
     //printf("cost at location %.2f", dist_matrix[0][1]);
     
