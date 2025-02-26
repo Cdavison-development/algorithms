@@ -84,8 +84,8 @@ void RemoveFromUnvisited(int IdxToRemove,Arrays* arr){
 
     for(int j =0;j<=arr->unvisitedSize;j++){
         if(arr->unvisited[j]==IdxToRemove){
-            int PlaceHolder = INT_MAX;
-            PlaceHolder = arr->unvisited[arr->unvisitedSize];
+            int PlaceHolder = arr->unvisited[arr->unvisitedSize];
+            //PlaceHolder = arr->unvisited[arr->unvisitedSize];
             arr->unvisited[arr->unvisitedSize] = arr->unvisited[j];
             arr->unvisited[j] = PlaceHolder;
             }
@@ -127,14 +127,28 @@ int findClosestVertex(Arrays* arr, double **dist_matrix){
 
     //iterate for each vertex
     double GlobalCost = DBL_MAX;
+    int cheapestVertex = INT_MAX;
     for(int i = 0; i <= arr->unvisitedSize;i++){
         int currentVertex = arr->unvisited[i];
-        double localCost = DBL_MAX;
-        for(int j = 0; j<arr->tourCount;j++){
-            
+        printf("The current vertex is %d",currentVertex);
+        printf("\n");
+        double localCost = 0;
+            for(int j = 0; j<arr->tourCount;j++){
+                //printf("testing dist matrix %f", dist_matrix[currentVertex][arr->tour[j]]);
+                localCost += dist_matrix[currentVertex][arr->tour[j]];  
+                printf("The local cost is %f",localCost);        
+            }
+        
+            if(localCost < GlobalCost){
+                GlobalCost = localCost;
+                cheapestVertex = currentVertex;
+            }
         }
-    }
+        printf("\nThe lowest global cost is %f",GlobalCost);
+        printf("\nThe cheapest vertex is %d",cheapestVertex);
+    return cheapestVertex;
 }
+
 
 /**
  * Insert Vj between two connected vertices in the partial tour Vn and Vn+1, where n is a position in the partial tour
@@ -143,11 +157,56 @@ int findClosestVertex(Arrays* arr, double **dist_matrix){
 //we want to close the starting loop AFTER we have found and inserted the first closest vertex.
 //make sure insertion logic is correct, as in we are not moving items in the array.
 /**
- * repeat steps 2 and 3 until all of the veritces have been visited
+ * repeat steps 2 and 3 until all of the vertices have been visited
  * 
 */
+int FindBestInsertionIdx(Arrays* arr, double **dist_matrix, int CheapestVertex){
 
-void main(){
+            double GlobalMinDist = DBL_MAX;
+            int GlobalCheapestInsertionIdx = INT_MAX;
+            //iterate over tour, I am unsure whether we need i< or i<= so keep this in mind during testing
+            for(int i =0; i<=arr->tourCount;i++){
+                double localMinDist = dist_matrix[arr->tour[i]][CheapestVertex] + dist_matrix[arr->tour[i+1]][CheapestVertex] - dist_matrix[arr->tour[i]][arr->tour[i+1]];
+                int localCheapestInsertionIdx = i;
+
+
+                if(localMinDist < GlobalMinDist){
+                    GlobalMinDist = localMinDist;
+                    GlobalCheapestInsertionIdx = localCheapestInsertionIdx;
+                }
+                printf("\nInserting  %d between %d and %d : Cost increase %f", CheapestVertex,arr->tour[i],arr->tour[i+1],localMinDist);
+                //printf("\nThe cheapest insertion index for for %d is : %d", arr->tour[i],localCheapestInsertionIdx);
+            }
+            printf("\nThe Global Min dist is : %f",GlobalMinDist);
+            printf("\nThe cheapest insertion index is : %d",GlobalCheapestInsertionIdx);
+
+            return GlobalCheapestInsertionIdx;
+            //remember to account for adding the closing 0 to the end of the tour.
+
+        // now that i have the best insertion idx, i need to remove it from unvisited, and add to the tour.
+}
+
+// now that i have the best insertion idx, i need to remove it from unvisited, and add to the tour, and do all relevant handling.
+void InsertVertex(Arrays* arr, double **dist_matrix, int CheapestInsertionIdx, int CheapestVertex){
+
+    //just need to push up all other items in the array
+            for(int j = arr->tourCount;j>CheapestInsertionIdx;j--){
+                arr->tour[j] = arr->tour[j-1];
+            }
+            arr->tour[CheapestInsertionIdx] = CheapestVertex;
+
+            printf("Current tour : \n");
+            for(int j = 0; j<=arr->tourCount;j++){
+                printf("%d,",arr->tour[j]);
+            }
+            // **ensure this works as expected in testing**
+            RemoveFromUnvisited(CheapestVertex,arr);
+            arr->tourCount++;
+            //printf("TourCount is : %d", arr->tourCount);
+            arr->unvisitedSize--;
+}
+
+void SmallestSumInsertion(Arrays* arr){
     Coordinate coordinates[] = {
         {867.8813832218043, 399.10334472405395},
         {263.5067701401023, 95.23581230656842},
@@ -159,16 +218,32 @@ void main(){
         {556.6539038363909, 719.5543505449659},
         {143.18918666443426, 756.1858968640379}
     };
+
+
+    returnArrays(arr);
+    setUpArrays(arr);
     double **dist_matrix;
     dist_matrix = distance_matrix(coordinates);
-    //array_size();
+    for(int i = 0; i < 10;i++){
+    int ClosestVertex = findClosestVertex(arr,dist_matrix);
+    int BestInsertionIdx = FindBestInsertionIdx(arr,dist_matrix,findClosestVertex(arr,dist_matrix));
+    InsertVertex(arr,dist_matrix,BestInsertionIdx,ClosestVertex);
+    //ensure that this handling is correct also
+    //if(arr->tourCount == 2){
+       // arr->tour[2] == 0;
+        //arr->tourCount++;
+    //}
+    }
+    printf("Final tour : \n");
+        for(int j = 0; j<=arr->tourCount;j++){
+            printf("%d,",arr->tour[j]);
+        }
     
-    //smallestSumInsertion(coordinates,dist_matrix);
-    Arrays arr;
-    //pass the address of arr to the function
-    returnArrays(&arr);
-    setUpArrays(&arr);
-    //printf("cost at location %.2f", dist_matrix[0][1]);
-    
+}
+void main(){
 
+    Arrays arr;
+
+    SmallestSumInsertion(&arr);
+    
 }
